@@ -9,6 +9,9 @@ import PaymentDetails from "@/app/components/checkout/PaymentDetails";
 import CountdownTimer from "@/app/components/checkout/CountdownTimer";
 import Footer from "@/app/components/Footer";
 import { SelectedTicket } from "@/app/types/seat";
+import { useTicketContractStore } from "@/app/store/useNftStore";
+import { useAuthStore } from "@/app/store/useAuthStore";
+import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -17,13 +20,17 @@ export default function CheckoutPage() {
 
   const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+
+  const { mintTicket } = useTicketContractStore();
+  const { connectedAddress, connectWallet } = useAuthStore();
 
   useEffect(() => {
     // Fetch selected tickets from sessionStorage
     const storedTickets = sessionStorage.getItem("selectedTickets");
     if (storedTickets) {
       try {
-        const tickets = JSON.parse(storedTickets);
+        const tickets = JSON.parse(storedTickets) as SelectedTicket[];
         setSelectedTickets(tickets);
       } catch (error) {
         console.error("Error parsing tickets:", error);
@@ -36,30 +43,68 @@ export default function CheckoutPage() {
     setIsLoading(false);
   }, [eventId, router]);
 
-  const handlePayment = () => {
-    // Prepare purchase data for success page
-    const purchaseData = {
-      tickets: selectedTickets,
-      totalAmount: subtotal + totalServiceFees,
-      purchaseDate: new Date().toISOString(),
-    };
-
-    // Store purchase data in sessionStorage
-    sessionStorage.setItem("purchaseData", JSON.stringify(purchaseData));
-
-    // Clear selected tickets
-    sessionStorage.removeItem("selectedTickets");
-
-    // Redirect to success page
-    router.push(`/event/${eventId}/success`);
-  };
-
   const subtotal = selectedTickets.reduce(
     (sum, ticket) => sum + ticket.tier.price,
     0
   );
   const serviceFeePerTicket = 1.0;
   const totalServiceFees = selectedTickets.length * serviceFeePerTicket;
+
+   const handlePayment = async () => {
+    if (!connectedAddress) {
+      toast.error("Please connect your Cardano wallet first.");
+      await connectWallet?.();
+      return;
+    }
+    if (selectedTickets.length === 0) {
+      toast.error("No tickets selected.");
+      return;
+    }
+
+    setPaying(true);
+    try {
+      const first = selectedTickets[0];
+      const eventName = first.eventTitle;
+      const eventDescription =
+        "Ticket for event purchased through the Cardano checkout.";
+
+      const usdToInrRate = 85;
+
+      for (const ticket of selectedTickets) {
+        const priceInRupees = ticket.tier.price * usdToInrRate;
+        const imageUrl = ticket.eventImage;
+
+        const payload = {
+          eventName,
+          eventDescription,
+          seatId: `${ticket.seat.section}-${ticket.seat.row}-${ticket.seat.number}`,
+          priceInRupees,
+          imageUrl,
+        };
+
+        console.log("About to call mintTicket with payload:", payload);
+
+        await mintTicket(payload);
+      }
+
+      // Optionally: store purchase data for success page
+      const purchaseData = {
+        tickets: selectedTickets,
+        totalAmount: subtotal + totalServiceFees,
+        purchaseDate: new Date().toISOString(),
+      };
+      sessionStorage.setItem("purchaseData", JSON.stringify(purchaseData));
+      sessionStorage.removeItem("selectedTickets");
+
+      toast.success("All ticket NFTs minted successfully!");
+      router.push(`/event/${eventId}/success`);
+    } catch (error) {
+      console.error("Mint/payment error:", error);
+      toast.error("Failed to mint tickets. Please try again.");
+    } finally {
+      setPaying(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -69,7 +114,7 @@ export default function CheckoutPage() {
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600" />
           <p className="text-gray-600">Loading checkout...</p>
         </motion.div>
       </div>
@@ -77,7 +122,7 @@ export default function CheckoutPage() {
   }
 
   if (selectedTickets.length === 0) {
-    return null; // Will redirect
+    return null; // will redirect
   }
 
   return (
@@ -121,7 +166,7 @@ export default function CheckoutPage() {
           Fill Out Necessary Information here.
         </p>
 
-        {/* Two Column Layout - Responsive */}
+        {/* Two Column Layout */}
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
           {/* Left Column - Ticket List */}
           <div className="w-full lg:w-[45%]">
@@ -135,6 +180,7 @@ export default function CheckoutPage() {
               serviceFee={totalServiceFees}
               itemCount={selectedTickets.length}
               onPayment={handlePayment}
+              paying={paying}
             />
           </div>
         </div>
