@@ -3,9 +3,10 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/app/store/useAuthStore";
-import { Data } from "lucid-cardano";
+import { Data, fromText, Script } from "lucid-cardano";
 import { generateNativeMintingPolicy } from "@/app/lib/generateNativePolicy";
 import { uploadMetadataToPinata } from "@/app/lib/uploadToPinata";
+
 
 const TICKET_SCRIPT_ADDRESS =
   process.env.NEXT_PUBLIC_TICKET_SCRIPT_ADDRESS || "";
@@ -81,14 +82,58 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       console.log("Metadata uploaded:", metadataUrl);
 
       // 3) Generate native minting policy
-      const { nativeScript, policyId } = await generateNativeMintingPolicy(lucid);
+      const { nativeScript, policyId, keyHash: policyKeyHash } = // <-- Get keyHash here
+        await generateNativeMintingPolicy(lucid);
 
+      // --- START CORRECTED DEBUG LOGS ---
+      const signerKeyHash = lucid.utils.getAddressDetails(connectedAddress)
+        .paymentCredential?.hash;
+
+        console.log("DEBUG: Connected address:", connectedAddress);
+      console.log("DEBUG: Policy requires keyHash:", policyKeyHash);
+      console.log("DEBUG: Signer provides keyHash:", signerKeyHash);
+
+      if (policyKeyHash !== signerKeyHash) {
+        toast.error("CRITICAL: KeyHash mismatch! Policy and signer do not match.");
+        console.error(
+          "CRITICAL: KeyHash mismatch! Policy requires",
+          policyKeyHash,
+          "but signer is",
+          signerKeyHash
+        );
+        set({ minting: false });
+        return;
+      }
+      // --- END CORRECTED DEBUG LOGS ---
+      
+/*
       // 4) Unique asset name per seat
       const timestamp = Date.now();
       const assetName = `Ticket-${seatId}-${timestamp}`;
       const assetNameHex = Buffer.from(assetName, "utf8").toString("hex");
       const unit = `${policyId}${assetNameHex}`;
+*/    
+      // 4) Build a short asset name (≤ 32 bytes) using seatId + tiny nonce
+      const encoder = new TextEncoder();
+      const nonce = Date.now().toString(36).slice(-4); // short suffix
+      const prefix = "T";
+      let base = `${prefix}-${seatId}`; // keep it compact
+      let tokenName = `${base}-${nonce}`;
 
+      // Enforce max 32 bytes for AssetName (UTF-8 bytes)
+      while (encoder.encode(tokenName).length > 32) {
+        base = base.slice(0, -1);
+        if (base.length <= 2) {
+          tokenName = `${prefix}-${nonce}`;
+          break;
+        }
+        tokenName = `${base}-${nonce}`;
+      }
+
+      // Convert to hex
+      const assetNameHex = fromText(tokenName);
+      const unit = `${policyId}${assetNameHex}`;
+      
       // 5) On-chain metadata
       const onchainMetadata = {
         [policyId]: {
@@ -109,16 +154,18 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       // 6) Build and submit tx
       const tx = await lucid
         .newTx()
-        .mintAssets({ [unit]: BigInt(1) }, Data.void())
+        .addSigner(connectedAddress)
+        .mintAssets({ [unit]: 1n })             
         .attachMintingPolicy(nativeScript)
-        .payToAddress(connectedAddress, { [unit]: BigInt(1) })
+        .payToAddress(connectedAddress, { [unit]: 1n })
         .attachMetadata(721, onchainMetadata)
         .complete();
+
+        console.log("DEBUG: Transaction details:", tx);
 
       const signed = await tx.sign().complete();
       toast("Minting ticket NFT...", { icon: "⏳" });
       const txHash = await signed.submit();
-
       toast.success(`Ticket minted! TX: ${txHash.slice(0, 10)}...`);
       console.log(
         "Explorer:",
