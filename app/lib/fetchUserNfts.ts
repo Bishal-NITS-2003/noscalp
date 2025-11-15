@@ -38,7 +38,8 @@ export async function fetchUserNfts(
 
         const blockfrost = lucid.provider as any;
         try {
-          const assetInfo = await blockfrost.assetInfo(unit);
+          const assetId = `${policyId}${assetNameHex}`;
+      const assetInfo = await blockfrost.assetById(assetId);
           const metadata = assetInfo.onchain_metadata || {};
 
           nfts.push({
