@@ -1,5 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/useAuthStore";
@@ -105,6 +106,15 @@ export default function Navbar() {
           ))}
         </ul>
 
+        {/* My Tickets button - desktop */}
+        <div className="hidden md:block">
+          <Link href="/my-tickets">
+            <button className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">
+              My Tickets
+            </button>
+          </Link>
+        </div>
+
         {/* Wallet Section - Desktop */}
         <div className="hidden md:block">
           {authUser && connectedAddress ? (
@@ -206,6 +216,13 @@ export default function Navbar() {
                   </a>
                 </li>
               ))}
+              <li>
+                <Link href="/my-tickets">
+                  <button className="w-full rounded-full bg-purple-600 px-6 py-2 text-sm font-semibold text-white hover:bg-purple-700">
+                    My Tickets
+                  </button>
+                </Link>
+              </li>
               <li>
                 {authUser && connectedAddress ? (
                   <div className="space-y-2">
