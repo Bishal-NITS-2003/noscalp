@@ -1,4 +1,4 @@
-# Eventick - Event Ticketing Landing Page
+# NoScalp - Event Ticketing Landing Page
 
 A modern, responsive landing page for an event ticketing platform built with Next.js, TypeScript, Tailwind CSS, and Framer Motion.
 
@@ -95,7 +95,7 @@ pnpm dev
 ## 📁 Project Structure
 
 ```
-eventick/
+noscalp/
 ├── app/
 │   ├── components/
 │   │   ├── Navbar.tsx          # Navigation component

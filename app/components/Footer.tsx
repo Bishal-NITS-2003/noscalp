@@ -8,7 +8,7 @@ const footerLinks = {
     "Online RSVP",
     "Online Events",
   ],
-  Eventick: [
+  Noscalp: [
     "About Us",
     "Press",
     "Contact Us",
@@ -38,22 +38,13 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
           >
             <div className="mb-6 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                <svg
-                  className="h-5 w-5"
-                  style={{ color: "#5522CC" }}
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold">Eventick</span>
+              <span className="text-xl font-bold">NoScalp</span>
             </div>
             <p className="mb-6 text-sm text-gray-400">
-              Eventick is a global self-service ticketing platform for live
-              experiences that allows anyone to create, share, find and attend
-              events that fuel their passions and enrich their lives.
+              NoScalp is a revolutionary blockchain-based ticketing platform
+              that ensures transparent, secure, and fair ticket distribution.
+              Experience authentic event access without the worry of scalpers or
+              counterfeit tickets.
             </p>
             <div className="flex gap-3">
               <motion.a
@@ -102,16 +93,16 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* Eventick Column */}
+          {/* Noscalp Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <h3 className="mb-6 text-sm font-semibold">Eventick</h3>
+            <h3 className="mb-6 text-sm font-semibold">Noscalp</h3>
             <ul className="space-y-3">
-              {footerLinks["Eventick"].map((link) => (
+              {footerLinks["Noscalp"].map((link) => (
                 <li key={link}>
                   <a
                     href="#"
@@ -164,7 +155,7 @@ export default function Footer() {
           transition={{ delay: 0.4, duration: 0.5 }}
           className="mt-12 border-t border-gray-800 pt-8 text-center"
         >
-          <p className="text-sm text-gray-500">Copyright © 2022 Avi Yansah</p>
+          <p className="text-sm text-gray-500">Copyright © 2025 Noscalp</p>
         </motion.div>
       </div>
     </footer>

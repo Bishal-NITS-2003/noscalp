@@ -169,5 +169,5 @@ For issues or questions:
 
 - Check FAQ section
 - Contact customer support
-- Email: support@eventick.com
+- Email: dasbishal1717@gmail.com
 - Live chat available on website

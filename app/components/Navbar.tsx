@@ -22,7 +22,7 @@ export default function Navbar() {
           className="flex items-center gap-2"
         >
           <div className="relative h-8 w-32 sm:h-10 sm:w-40">
-            <Image objectFit="cover" src="/logo.png" alt="Eventick Logo" fill />
+            <Image objectFit="cover" src="/logo2.png" alt="Noscalp Logo" fill />
           </div>
         </motion.div>
 
