@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const footerLinks = {
   "Plan Events": [
@@ -38,7 +39,14 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
           >
             <div className="mb-6 flex items-center gap-2">
-              <span className="text-xl font-bold">NoScalp</span>
+              <div className="relative h-10 w-36 sm:h-12 sm:w-44">
+                <Image
+                  src="/logo3.png"
+                  alt="NoScalp Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
             <p className="mb-6 text-sm text-gray-400">
               NoScalp is a revolutionary blockchain-based ticketing platform
