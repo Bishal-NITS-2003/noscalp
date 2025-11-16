@@ -1,4 +1,10 @@
-import { Blockfrost, Lucid } from "lucid-cardano";
+import { Lucid } from "lucid-cardano";
+
+const BLOCKFROST_API_URL =
+  process.env.NEXT_PUBLIC_BLOCKFROST_API_URL ??
+  "https://cardano-preprod.blockfrost.io/api/v0";
+const BLOCKFROST_PROJECT_ID =
+  process.env.NEXT_PUBLIC_BLOCKFROST_PROJECT_ID ?? "";
 
 export type NftTicket = {
   unit: string;
@@ -9,12 +15,12 @@ export type NftTicket = {
     name: string;
     image: string;
     description?: string;
-    event?: string;          // ← from your metadata
-    seat?: string;           // ← from your metadata
-    price_inr?: string;      // ← from your metadata
-    max_resale_price_inr?: string; // ← from your metadata
-    issuedAt?: string;       // ← from your metadata
-    metadataUrl?: string;    // ← from your metadata
+    event?: string;
+    seat?: string;
+    price_inr?: string;
+    max_resale_price_inr?: string;
+    issuedAt?: string;
+    metadataUrl?: string;
   };
   mintTxHash?: string;
 };
@@ -36,11 +42,29 @@ export async function fetchUserNfts(
         const assetNameHex = unit.slice(56);
         const assetName = Buffer.from(assetNameHex, "hex").toString("utf8");
 
-        const blockfrost = lucid.provider as any;
         try {
           const assetId = `${policyId}${assetNameHex}`;
-      const assetInfo = await blockfrost.assetById(assetId);
-          const metadata = assetInfo.onchain_metadata || {};
+          const response = await fetch(
+            `${BLOCKFROST_API_URL}/assets/${assetId}`,
+            {
+              headers: {
+                project_id: BLOCKFROST_PROJECT_ID,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          const assetInfo: {
+            onchain_metadata?: Record<string, any>;
+            metadata?: Record<string, any>;
+            initial_mint_tx_hash?: string;
+          } = await response.json();
+
+          const metadata =
+            assetInfo.onchain_metadata ?? assetInfo.metadata ?? {};
 
           nfts.push({
             unit,
@@ -48,15 +72,15 @@ export async function fetchUserNfts(
             assetName,
             quantity: quantity.toString(),
             onchainMetadata: {
-              name: metadata.name || assetName,
-              image: metadata.image || "",
+              name: metadata.name ?? assetName,
+              image: metadata.image ?? "",
               description: metadata.description,
-              event: metadata.event,              // ← your field
-              seat: metadata.seat,                // ← your field
-              price_inr: metadata.price_inr,      // ← your field
-              max_resale_price_inr: metadata.max_resale_price_inr, // ← your field
-              issuedAt: metadata.issuedAt,        // ← your field
-              metadataUrl: metadata.metadataUrl,  // ← your field
+              event: metadata.event,
+              seat: metadata.seat,
+              price_inr: metadata.price_inr,
+              max_resale_price_inr: metadata.max_resale_price_inr,
+              issuedAt: metadata.issuedAt,
+              metadataUrl: metadata.metadataUrl,
             },
             mintTxHash: assetInfo.initial_mint_tx_hash,
           });
