@@ -99,7 +99,7 @@ export default function PaymentDetails({
       <button
         onClick={handleClick}
         disabled={!walletConnected || !agreedToPolicy || paying}
-        className="w-full rounded-lg bg-linear-to-r from-purple-600 to-pink-500 py-4 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-linear-to-r from-purple-600 to-pink-500 py-4 px-2 sm:text-base text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
       >
         {walletConnected
           ? paying

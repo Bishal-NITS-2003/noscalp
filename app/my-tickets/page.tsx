@@ -45,14 +45,27 @@ export default function MyTicketsPage() {
   if (!connectedAddress) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex min-h-[60vh] items-center justify-center px-4">
+              {/* Navbar with background */}
+              <div className="relative z-10">
+                <div
+                  className="absolute inset-0 z-0"
+                  style={{
+                    backgroundImage: `url('/Hero/background.png')`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "cover",
+                    backgroundPosition: "top",
+                  }}
+                />
+                <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+                <Navbar />
+              </div>
+        <div className="flex min-h-[60vh] items-center justify-center px-4 my-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <Ticket className="mx-auto mb-4 h-16 w-16 text-purple-500" />
+            <Ticket className="mx-auto mb-4 h-16 w-16 text-[#5522CC]" />
             <h2 className="mb-2 text-2xl font-bold text-gray-900">
               Connect Your Wallet
             </h2>
@@ -61,7 +74,7 @@ export default function MyTicketsPage() {
             </p>
             <button
               onClick={connectWallet}
-              className="rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg hover:bg-purple-700 transition-colors"
+              className="rounded-lg bg-[#5522CC] px-6 py-3 font-semibold text-white shadow-lg hover:bg-purple-700 transition-colors"
             >
               Connect Wallet
             </button>
@@ -74,7 +87,20 @@ export default function MyTicketsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+       {/* Navbar with background */}
+              <div className="relative z-10">
+                <div
+                  className="absolute inset-0 z-0"
+                  style={{
+                    backgroundImage: `url('/Hero/background.png')`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "cover",
+                    backgroundPosition: "top",
+                  }}
+                />
+                <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+                <Navbar />
+              </div>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <motion.div
