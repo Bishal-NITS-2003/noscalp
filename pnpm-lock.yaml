@@ -20,6 +20,9 @@ importers:
       '@meshsdk/core':
         specifier: ^1.9.0-beta.87
         version: 1.9.0-beta.87(@babel/core@7.28.5)(@bufbuild/protobuf@1.10.1)(@harmoniclabs/bytestring@1.0.0)(@harmoniclabs/crypto@0.2.5)(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(bare-url@2.3.2)(bufferutil@4.0.9)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(tailwindcss@4.1.17)(utf-8-validate@6.0.5)
+      '@peculiar/webcrypto':
+        specifier: ^1.5.0
+        version: 1.5.0
       axios:
         specifier: ^1.13.2
         version: 1.13.2

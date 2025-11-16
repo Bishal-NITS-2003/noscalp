@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {},
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -13,10 +12,15 @@ const nextConfig: NextConfig = {
 
     // Fix lucid-cardano symlink issues
     config.resolve.symlinks = false;
-    
-    // Ignore problematic files during build
+
+    // Don't bundle lucid-cardano on server - it's client-only
     if (isServer) {
-      config.externals = [...(config.externals || []), 'lucid-cardano'];
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "lucid-cardano": false,
+        "@peculiar/webcrypto": false,
+        ws: false,
+      };
     }
 
     return config;

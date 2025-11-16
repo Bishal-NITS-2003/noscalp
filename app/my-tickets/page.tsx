@@ -9,6 +9,10 @@ import { fetchUserNfts, NftTicket } from "@/app/lib/fetchUserNfts";
 import toast from "react-hot-toast";
 import { Ticket } from "lucide-react";
 
+// Disable static generation
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default function MyTicketsPage() {
   const { lucid, connectedAddress, connectWallet } = useAuthStore();
   const [tickets, setTickets] = useState<NftTicket[]>([]);

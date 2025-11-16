@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
@@ -13,6 +13,7 @@
     "@emurgo/cardano-serialization-lib-browser": "^15.0.3",
     "@emurgo/cardano-serialization-lib-nodejs": "^15.0.3",
     "@meshsdk/core": "^1.9.0-beta.87",
+    "@peculiar/webcrypto": "^1.5.0",
     "axios": "^1.13.2",
     "framer-motion": "^12.23.24",
     "html2canvas": "^1.4.1",

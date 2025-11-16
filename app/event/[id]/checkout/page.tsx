@@ -13,6 +13,10 @@ import { useTicketContractStore } from "@/app/store/useNftStore";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import toast from "react-hot-toast";
 
+// Disable static generation
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default function CheckoutPage() {
   const params = useParams();
   const router = useRouter();
@@ -50,7 +54,7 @@ export default function CheckoutPage() {
   const serviceFeePerTicket = 1.0;
   const totalServiceFees = selectedTickets.length * serviceFeePerTicket;
 
-   const handlePayment = async () => {
+  const handlePayment = async () => {
     if (!connectedAddress) {
       toast.error("Please connect your Cardano wallet first.");
       await connectWallet?.();

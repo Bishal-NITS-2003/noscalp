@@ -1,1 +1,11 @@
-node_modules/lucid-cardano/esm/src/core/libs/cardano_message_signing/data:*
+# Ignore lucid-cardano problematic symlinked files
+
+**/lucid-cardano/esm/src/core/libs/cardano_message_signing/data:\*
+**/lucid-cardano/\*_/data:_
+
+# Standard ignores
+
+.git
+.gitignore
+README.md
+\*.md
