@@ -3,14 +3,16 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { NftTicket } from "@/app/lib/fetchUserNfts";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 
 interface TicketCardProps {
   ticket: NftTicket;
   index: number;
+  onBurn?: (ticket: NftTicket) => void;
+  isBurning?: boolean;
 }
 
-export default function TicketCard({ ticket, index }: TicketCardProps) {
+export default function TicketCard({ ticket, index, onBurn, isBurning }: TicketCardProps) {
   const verificationUrl =
     typeof window !== "undefined" && ticket.mintTxHash
       ? `${window.location.origin}/verify-ticket?unit=${ticket.unit}&txHash=${ticket.mintTxHash}`
@@ -90,17 +92,30 @@ export default function TicketCard({ ticket, index }: TicketCardProps) {
           </div>
         </div>
 
-        {ticket.mintTxHash && (
-          <a
-            href={explorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-lg bg-purple-100 px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-200 transition-colors"
-          >
-            <ExternalLink className="h-4 w-4" />
-            View on Cardano Explorer
-          </a>
-        )}
+        <div className="space-y-2">
+          {ticket.mintTxHash && (
+            <a
+              href={explorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-purple-100 px-4 py-2 text-sm font-medium text-purple-700 hover:bg-purple-200 transition-colors"
+            >
+              <ExternalLink className="h-4 w-4" />
+              View on Explorer
+            </a>
+          )}
+
+          {onBurn && (
+            <button
+              onClick={() => onBurn(ticket)}
+              disabled={isBurning}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isBurning ? "Canceling..." : "Cancel Ticket"}
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );

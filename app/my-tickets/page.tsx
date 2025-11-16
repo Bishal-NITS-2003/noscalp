@@ -5,6 +5,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import TicketCard from "@/app/components/tickets/TicketCard";
 import { useAuthStore } from "@/app/store/useAuthStore";
+import { useTicketContractStore } from "@/app/store/useNftStore";
 import { fetchUserNfts, NftTicket } from "@/app/lib/fetchUserNfts";
 import toast from "react-hot-toast";
 import { Ticket } from "lucide-react";
@@ -15,8 +16,10 @@ export const runtime = "nodejs";
 
 export default function MyTicketsPage() {
   const { lucid, connectedAddress, connectWallet } = useAuthStore();
+  const { burnTicket } = useTicketContractStore();
   const [tickets, setTickets] = useState<NftTicket[]>([]);
   const [loading, setLoading] = useState(false);
+  const [burning, setBurning] = useState<string | null>(null);
 
   useEffect(() => {
     if (lucid && connectedAddress) {
@@ -39,6 +42,24 @@ export default function MyTicketsPage() {
       toast.error("Failed to load your tickets.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBurnTicket = async (ticket: NftTicket) => {
+    if (!confirm(`Are you sure you want to cancel ticket: ${ticket.onchainMetadata.name}?`)) {
+      return;
+    }
+
+    try {
+      setBurning(ticket.unit);
+      await burnTicket(ticket);
+      toast.success("Ticket cancelled successfully!");
+      await loadTickets(); // Refresh the list
+    } catch (error) {
+      console.error("Burn failed:", error);
+      toast.error("Failed to cancel ticket");
+    } finally {
+      setBurning(null);
     }
   };
 
@@ -116,7 +137,13 @@ export default function MyTicketsPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {tickets.map((ticket, index) => (
-              <TicketCard key={ticket.unit} ticket={ticket} index={index} />
+              <TicketCard
+                key={ticket.unit}
+                ticket={ticket}
+                index={index}
+                onBurn={handleBurnTicket}
+                isBurning={burning === ticket.unit}
+              />
             ))}
           </div>
         )}
