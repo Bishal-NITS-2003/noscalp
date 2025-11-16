@@ -1,4 +1,4 @@
-# Eventick Landing Page - Image Assets
+# Noscalp Landing Page - Image Assets
 
 ## Required Images
 

@@ -77,13 +77,13 @@ export default function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="relative z-50 px-4 py-4 sm:px-6 lg:px-8"
+      className="relative z-60 px-4 py-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto flex max-w-[1180px] items-center justify-between">
         {/* Logo */}
         <motion.div whileHover={{ scale: 1.03 }} className="flex items-center gap-2">
           <div className="relative h-8 w-32 sm:h-10 sm:w-40">
-            <Image src="/logo.png" alt="Eventick Logo" fill style={{ objectFit: "cover" }} />
+            <Image objectFit="cover" src="/logo2.png" alt="Noscalp Logo" fill />
           </div>
         </motion.div>
 
