@@ -6,6 +6,7 @@ import { useAuthStore } from "@/app/store/useAuthStore";
 import { Data, fromText, Script } from "lucid-cardano";
 import { generateNativeMintingPolicy } from "@/app/lib/generateNativePolicy";
 import { uploadMetadataToPinata } from "@/app/lib/uploadToPinata";
+import type { NftTicket } from "@/app/lib/fetchUserNfts";
 
 
 const TICKET_SCRIPT_ADDRESS =
@@ -28,6 +29,7 @@ type TicketContractState = {
   ) => Promise<{ txHash?: string; assetId?: string; metadataUrl?: string } | void>;
   cancelTicket: (tokenUnit: string) => Promise<string | void>;
   withdrawFunds: () => Promise<string | void>;
+  burnTicket: (ticket: NftTicket) => Promise<string>;
 };
 
 export const useTicketContractStore = create<TicketContractState>((set) => ({
@@ -217,5 +219,43 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
   withdrawFunds: async () => {
     toast.error("Withdraw must be performed by contract owner (server/admin).");
     return;
+  },
+
+  burnTicket: async (ticket: NftTicket) => {
+    const { lucid, connectedAddress } = useAuthStore.getState();
+
+    if (!lucid || !connectedAddress) {
+      throw new Error("Wallet not connected");
+    }
+
+    toast("Burning ticket NFT...", { icon: "🔥" });
+
+    try {
+      const { nativeScript } = await generateNativeMintingPolicy(lucid);
+
+      const tx = await lucid
+        .newTx()
+        .addSigner(connectedAddress)
+        .mintAssets({ [ticket.unit]: -1n })
+        .attachMintingPolicy(nativeScript)
+        .complete();
+
+      const signed = await tx.sign().complete();
+      const txHash = await signed.submit();
+
+      toast.success(`Ticket burned! TX: ${txHash.slice(0, 10)}...`);
+      console.log(
+        "Burn TX:",
+        `https://preprod.cardanoscan.io/transaction/${txHash}`
+      );
+
+      await lucid.awaitTx(txHash);
+
+      return txHash;
+    } catch (error: any) {
+      console.error("burnTicket error", error);
+      toast.error(error.message || "Failed to burn ticket");
+      throw error;
+    }
   },
 }));

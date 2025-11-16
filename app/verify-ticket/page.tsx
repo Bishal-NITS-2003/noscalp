@@ -6,11 +6,29 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { CheckCircle, XCircle, ExternalLink } from "lucide-react";
 
+// Disable static generation
+export const dynamic = "force-dynamic";
+
 const BLOCKFROST_API = "https://cardano-preprod.blockfrost.io/api/v0";
 
-function TicketVerifier({ ticketId }: { ticketId: string | null }) {
-  const unit = ticketId?.split("+")[0] || null;
-  const txHash = ticketId?.split("+")[1] || null;
+function TicketVerifier({
+  ticketId,
+  unit: unitParam,
+  txHash: txHashParam,
+}: {
+  ticketId: string | null;
+  unit: string | null;
+  txHash: string | null;
+}) {
+  // Support both formats: ticketId=unit+txHash OR unit=...&txHash=...
+  let unit = unitParam;
+  let txHash = txHashParam;
+
+  if (ticketId && !unit && !txHash) {
+    const parts = ticketId.split("+");
+    unit = parts[0] || null;
+    txHash = parts[1] || null;
+  }
 
   const [verifying, setVerifying] = useState(true);
   const [isValid, setIsValid] = useState(false);
@@ -62,11 +80,26 @@ function TicketVerifier({ ticketId }: { ticketId: string | null }) {
   if (!unit || !txHash) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
+         {/* Navbar with background */}
+                      <div className="relative z-10">
+                        <div
+                          className="absolute inset-0 z-0"
+                          style={{
+                            backgroundImage: `url('/Hero/background.png')`,
+                            backgroundRepeat: "no-repeat",
+                            backgroundSize: "cover",
+                            backgroundPosition: "top",
+                          }}
+                        />
+                        <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+                        <Navbar />
+                      </div>
         <div className="flex min-h-[60vh] items-center justify-center px-4">
           <div className="text-center">
             <XCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
-            <h2 className="text-2xl font-bold text-gray-900">Invalid QR Code</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Invalid QR Code
+            </h2>
             <p className="mt-2 text-gray-600">
               Missing verification parameters.
             </p>
@@ -79,7 +112,20 @@ function TicketVerifier({ ticketId }: { ticketId: string | null }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+       {/* Navbar with background */}
+                    <div className="relative z-10">
+                      <div
+                        className="absolute inset-0 z-0"
+                        style={{
+                          backgroundImage: `url('/Hero/background.png')`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: "top",
+                        }}
+                      />
+                      <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+                      <Navbar />
+                    </div>
 
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         {verifying ? (
@@ -170,8 +216,8 @@ function TicketVerifier({ ticketId }: { ticketId: string | null }) {
                     This ticket could not be verified on the blockchain.
                   </p>
                   <p className="mt-4 text-sm text-gray-500">
-                    Possible reasons: fake ticket, wrong network, or transaction not
-                    yet confirmed.
+                    Possible reasons: fake ticket, wrong network, or transaction
+                    not yet confirmed.
                   </p>
                 </div>
               </>
@@ -188,7 +234,10 @@ function TicketVerifier({ ticketId }: { ticketId: string | null }) {
 function VerifyTicketContent() {
   const params = useSearchParams();
   const ticketId = params.get("ticketId");
-  return <TicketVerifier ticketId={ticketId} />;
+  const unit = params.get("unit");
+  const txHash = params.get("txHash");
+
+  return <TicketVerifier ticketId={ticketId} unit={unit} txHash={txHash} />;
 }
 
 export default function VerifyTicketPage() {
