@@ -1,20 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { CheckCircle, XCircle, ExternalLink } from "lucide-react";
-// ...existing code...
-// Remove this import:
-// import { Blockfrost } from "lucid-cardano";
 
 const BLOCKFROST_API = "https://cardano-preprod.blockfrost.io/api/v0";
 
-export default function VerifyTicketPage() {
-  const searchParams = useSearchParams();
-  const unit = searchParams.get("unit");
-  const txHash = searchParams.get("txHash");
+function TicketVerifier({ ticketId }: { ticketId: string | null }) {
+  const unit = ticketId?.split("+")[0] || null;
+  const txHash = ticketId?.split("+")[1] || null;
 
   const [verifying, setVerifying] = useState(true);
   const [isValid, setIsValid] = useState(false);
@@ -186,5 +182,19 @@ export default function VerifyTicketPage() {
 
       <Footer />
     </div>
+  );
+}
+
+function VerifyTicketContent() {
+  const params = useSearchParams();
+  const ticketId = params.get("ticketId");
+  return <TicketVerifier ticketId={ticketId} />;
+}
+
+export default function VerifyTicketPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <VerifyTicketContent />
+    </Suspense>
   );
 }
