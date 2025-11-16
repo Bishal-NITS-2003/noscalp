@@ -11,12 +11,16 @@ const nextConfig: NextConfig = {
       crypto: false,
     };
 
-    // Fix lucid-cardano symlink issues in Vercel
+    // Fix lucid-cardano symlink issues
     config.resolve.symlinks = false;
+    
+    // Ignore problematic files during build
+    if (isServer) {
+      config.externals = [...(config.externals || []), 'lucid-cardano'];
+    }
 
     return config;
   },
-  serverExternalPackages: ["lucid-cardano"],
 };
 
 export default nextConfig;
