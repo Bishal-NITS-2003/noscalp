@@ -16,9 +16,7 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ["lucid-cardano"],
-  },
+  serverExternalPackages: ["lucid-cardano"],
 };
 
 export default nextConfig;
