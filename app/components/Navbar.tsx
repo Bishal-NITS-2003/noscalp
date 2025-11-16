@@ -76,7 +76,7 @@ export default function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="relative z-50 px-4 py-4 sm:px-6 lg:px-8"
+      className="relative z-60 px-4 py-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto flex max-w-[1180px] items-center justify-between">
         {/* Logo */}
