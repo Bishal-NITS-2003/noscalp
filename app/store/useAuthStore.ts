@@ -87,7 +87,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // select wallet in lucid
-      await lucid.selectWallet(walletApi);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await lucid.selectWallet(walletApi as any);
       const address = await lucid.wallet.address();
 
       // persist preferred wallet for auto-reconnect
@@ -242,7 +243,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
           // Initialize lucid (frontend) and select the wallet
           const lucid = await getLucidFront();
-          await lucid.selectWallet(walletApi);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await lucid.selectWallet(walletApi as any);
 
           // Fetch the address (this also validates wallet is usable)
           const address = await lucid.wallet.address();

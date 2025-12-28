@@ -11,6 +11,17 @@ export const dynamic = "force-dynamic";
 
 const BLOCKFROST_API = "https://cardano-preprod.blockfrost.io/api/v0";
 
+interface TicketMetadata {
+  event?: string;
+  name?: string;
+  seat?: string;
+  price_inr?: string;
+  issuedAt?: string;
+  mintTxHash?: string;
+  policyId?: string;
+  [key: string]: unknown;
+}
+
 function TicketVerifier({
   ticketId,
   unit: unitParam,
@@ -32,7 +43,7 @@ function TicketVerifier({
 
   const [verifying, setVerifying] = useState(true);
   const [isValid, setIsValid] = useState(false);
-  const [ticketData, setTicketData] = useState<unknown>(null);
+  const [ticketData, setTicketData] = useState<TicketMetadata | null>(null);
 
   useEffect(() => {
     if (unit && txHash) {
@@ -66,7 +77,7 @@ function TicketVerifier({
           ...assetInfo.onchain_metadata,
           mintTxHash: txHash,
           policyId: unit!.slice(0, 56),
-        });
+        } as TicketMetadata);
       } else {
         setIsValid(false);
       }
@@ -163,25 +174,25 @@ function TicketVerifier({
                     <div>
                       <p className="text-sm text-gray-500">Event</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.event || ticketData.name}
+                        {ticketData?.event || ticketData?.name || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Seat</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.seat || "N/A"}
+                        {ticketData?.seat || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Price</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.price_inr || "N/A"}
+                        {ticketData?.price_inr || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Issued</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.issuedAt
+                        {ticketData?.issuedAt
                           ? new Date(ticketData.issuedAt).toLocaleDateString()
                           : "N/A"}
                       </p>
@@ -191,7 +202,7 @@ function TicketVerifier({
                   <div className="border-t pt-4">
                     <p className="mb-2 text-sm text-gray-500">Policy ID</p>
                     <p className="break-all font-mono text-xs text-gray-700">
-                      {ticketData.policyId}
+                      {ticketData?.policyId || "N/A"}
                     </p>
                   </div>
 

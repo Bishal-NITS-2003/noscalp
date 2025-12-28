@@ -4,14 +4,10 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ProgressStepper from "@/app/components/event/ProgressStepper";
 import EventHeader from "../../components/event/EventHeader";
-import DateTimeSelector from "../../components/event/DateTimeSelector";
+import DateTimeSelector, {
+  type TimeSlot,
+} from "../../components/event/DateTimeSelector";
 import { getEventById } from "../../data/events";
-
-interface TimeSlot {
-  date: string;
-  time: string;
-  available: number;
-}
 
 export default function EventPage() {
   const params = useParams();
