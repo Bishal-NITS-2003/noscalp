@@ -33,6 +33,7 @@
     "html2canvas": "^1.4.1",
     "lucid-cardano": "^0.10.11",
     "lucide-react": "^0.553.0",
+    "mongoose": "^9.0.2",
     "next": "16.1.1",
     "node-fetch": "^3.3.2",
     "qrcode.react": "^4.2.0",

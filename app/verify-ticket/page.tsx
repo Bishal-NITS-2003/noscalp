@@ -56,34 +56,49 @@ function TicketVerifier({
 
   const verifyTicket = async () => {
     try {
+      setVerifying(true);
+
+      // 1. Check original owner via backend API
+      const res = await fetch("/api/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetUnit: unit }),
+      });
+      const result = await res.json();
+      setIsValid(result.valid);
+
+      if (!result.valid) {
+        setTicketData(null);
+        return; // Stop if not valid
+      }
+
+      // 2. (Optional) Also check transaction exists
       const projectId = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY!;
-      // 1. Verify transaction exists
       const txRes = await fetch(`${BLOCKFROST_API}/txs/${txHash}`, {
         headers: { project_id: projectId },
       });
       if (!txRes.ok) throw new Error("Transaction not found");
 
-      // 2. Verify asset exists and get metadata
+      // 3. Fetch asset metadata for display
       const assetRes = await fetch(`${BLOCKFROST_API}/assets/${unit}`, {
         headers: { project_id: projectId },
       });
       if (!assetRes.ok) throw new Error("Asset not found");
 
       const assetInfo = await assetRes.json();
-
       if (assetInfo && assetInfo.onchain_metadata) {
-        setIsValid(true);
         setTicketData({
           ...assetInfo.onchain_metadata,
           mintTxHash: txHash,
           policyId: unit!.slice(0, 56),
         } as TicketMetadata);
       } else {
-        setIsValid(false);
+        setTicketData(null);
       }
     } catch (error) {
       console.error("Verification failed:", error);
       setIsValid(false);
+      setTicketData(null);
     } finally {
       setVerifying(false);
     }

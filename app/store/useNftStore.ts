@@ -77,6 +77,8 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
           },
           { trait_type: "Issued At", value: new Date().toISOString() },
         ],
+        transferable: false, // ⬅️ Add this line
+        note: "Transfers invalidate this ticket",
       };
 
       // 2) Upload metadata JSON to Pinata (optional but you already have it)
@@ -179,6 +181,17 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
         "Explorer:",
         `https://preprod.cardanoscan.io/transaction/${txHash}`
       );
+
+      await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assetUnit: unit,
+          mintTxHash: txHash,
+          originalOwnerWallet: connectedAddress,
+          status: "VALID",
+        }),
+      });
 
       return { txHash, assetId: unit, metadataUrl };
     } catch (err) {
