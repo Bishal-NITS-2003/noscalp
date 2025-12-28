@@ -5,7 +5,7 @@ import { getLucidFront, resetLucidFront } from "@/app/lib/lucidFront";
 
 // minimal runtime type guard for CIP-30 WalletApi-ish objects
 // ...existing code...
-function looksLikeWalletApi(obj: any): boolean {
+function looksLikeWalletApi(obj: unknown): boolean {
   if (!obj || typeof obj !== "object") return false;
   const required = [
     "getNetworkId",
@@ -15,7 +15,9 @@ function looksLikeWalletApi(obj: any): boolean {
     "signTx",
     "submitTx",
   ];
-  return required.every((k) => typeof obj[k] === "function");
+  return required.every(
+    (k) => typeof (obj as Record<string, unknown>)[k] === "function"
+  );
 }
 // ...existing code...
 
@@ -23,7 +25,7 @@ function looksLikeWalletApi(obj: any): boolean {
 declare global {
   interface Window {
     cardano?: {
-      [key: string]: any;
+      [key: string]: Record<string, unknown>;
     };
   }
 }
@@ -65,7 +67,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const provider = preferred ? providers[preferred] : null;
 
       if (!provider) {
-        toast.error("No CIP-30 Cardano wallet found. Install Lace / Eternl / Nami.");
+        toast.error(
+          "No CIP-30 Cardano wallet found. Install Lace / Eternl / Nami."
+        );
         set({ isLoggingIn: false });
         return null;
       }
@@ -75,7 +79,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // runtime-check walletApi implements required methods before handing to lucid
       if (!looksLikeWalletApi(walletApi)) {
-        toast.error("Connected wallet does not implement required CIP-30 methods.");
+        toast.error(
+          "Connected wallet does not implement required CIP-30 methods."
+        );
         set({ isLoggingIn: false });
         return null;
       }
@@ -88,7 +94,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         localStorage.setItem("preferred_wallet", preferred);
         localStorage.setItem("should_auto_reconnect", "true"); // allow recon on refresh
-      } catch (e) {
+      } catch {
         // ignore storage errors on some browsers
       }
 
@@ -114,9 +120,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       return address;
-    } catch (err: any) {
+    } catch (err) {
       console.error("connectWallet error:", err);
-      toast.error("Failed to connect wallet: " + (err?.message ?? err));
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error("Failed to connect wallet: " + errorMessage);
       return null;
     } finally {
       set({ isLoggingIn: false });
@@ -127,7 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       localStorage.removeItem("preferred_wallet");
       localStorage.setItem("should_auto_reconnect", "false"); // persist disable
-    } catch (e) {}
+    } catch {}
     resetLucidFront();
     set({
       authUser: false,
@@ -140,125 +147,140 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   autoReconnect: async () => {
-  // 1) Respect persisted user choice (localStorage)
-  try {
-    const val = typeof window !== "undefined" ? localStorage.getItem("should_auto_reconnect") : null;
-    if (val === "false") {
-      console.log("Auto-reconnect is disabled by user preference (localStorage).");
-      return;
-    }
-  } catch (e) {
-    // ignore storage errors (private mode / blocked)
-  }
-
-  // 2) Respect in-memory flag
-  const { shouldAutoReconnect } = get();
-  if (!shouldAutoReconnect) {
-    console.log("Auto-reconnect disabled by in-memory flag, skipping...");
-    return;
-  }
-
-  // 3) Ensure we're running in the browser
-  if (typeof window === "undefined") return;
-
-  try {
-    const providers = window.cardano || {};
-    const providerKeys = Object.keys(providers);
-    if (!providerKeys.length) {
-      console.log("No Cardano wallet providers found in window.cardano");
-      return;
-    }
-
-    // 4) Prefer previously selected wallet (guard localStorage read)
-    let preferred: string | null = null;
+    // 1) Respect persisted user choice (localStorage)
     try {
-      preferred = localStorage.getItem("preferred_wallet");
-    } catch (e) {
-      preferred = null;
-    }
-
-    const tryProviders = preferred
-      ? [preferred, ...providerKeys.filter((k) => k !== preferred)]
-      : window.cardano?.lace
-      ? ["lace", ...providerKeys.filter((k) => k !== "lace")]
-      : providerKeys;
-
-    // 5) Try each provider (silent isEnabled -> enable -> select wallet)
-    for (const key of tryProviders) {
-      try {
-        const prov = window.cardano?.[key];
-        if (!prov) continue;
-
-        // must support isEnabled for silent check
-        if (typeof prov.isEnabled !== "function") {
-          // skip providers that cannot silently report permission
-          continue;
-        }
-
-        const enabled = await prov.isEnabled();
-        if (!enabled) continue;
-
-        // call enable() — should be silent because isEnabled returned true
-        let walletApi: any = null;
-        try {
-          const res = await prov.enable();
-          // Some wallets return API from enable(); some mutate prov itself.
-          if (res && looksLikeWalletApi(res)) walletApi = res;
-          else if (looksLikeWalletApi(prov)) walletApi = prov;
-          else walletApi = res || prov;
-        } catch (enableErr) {
-          // enable() threw — try to use provider directly if it already implements methods
-          if (looksLikeWalletApi(prov)) {
-            walletApi = prov;
-          } else {
-            console.warn("provider.enable() threw and provider is not usable:", key, enableErr);
-            continue; // try next provider
-          }
-        }
-
-        if (!looksLikeWalletApi(walletApi)) {
-          console.warn("Provider enabled but does not implement required CIP-30 methods:", key);
-          continue;
-        }
-
-        // Initialize lucid (frontend) and select the wallet
-        const lucid = await getLucidFront();
-        await lucid.selectWallet(walletApi);
-
-        // Fetch the address (this also validates wallet is usable)
-        const address = await lucid.wallet.address();
-
-        // Persist preferred wallet and allow future autoReconnect
-        try {
-          localStorage.setItem("preferred_wallet", key);
-          localStorage.setItem("should_auto_reconnect", "true");
-        } catch (e) {
-          // ignore
-        }
-
-        // Update store and finish
-        set({
-          lucid,
-          connectedAddress: address,
-          walletProviderName: key,
-          authUser: true,
-          shouldAutoReconnect: true,
-        });
-
-        console.log("Auto-reconnected to wallet:", key, address);
+      const val =
+        typeof window !== "undefined"
+          ? localStorage.getItem("should_auto_reconnect")
+          : null;
+      if (val === "false") {
+        console.log(
+          "Auto-reconnect is disabled by user preference (localStorage)."
+        );
         return;
-      } catch (innerErr) {
-        // provider-specific failure — continue to next provider
-        console.warn("autoReconnect: provider attempt failed for", key, innerErr);
-        continue;
       }
+    } catch {
+      // ignore storage errors (private mode / blocked)
     }
 
-    // none reconnected
-    console.log("autoReconnect: no provider auto-reconnected");
-  } catch (err) {
-    console.warn("autoReconnect error", err);
-  }
-},
+    // 2) Respect in-memory flag
+    const { shouldAutoReconnect } = get();
+    if (!shouldAutoReconnect) {
+      console.log("Auto-reconnect disabled by in-memory flag, skipping...");
+      return;
+    }
 
+    // 3) Ensure we're running in the browser
+    if (typeof window === "undefined") return;
+
+    try {
+      const providers = window.cardano || {};
+      const providerKeys = Object.keys(providers);
+      if (!providerKeys.length) {
+        console.log("No Cardano wallet providers found in window.cardano");
+        return;
+      }
+
+      // 4) Prefer previously selected wallet (guard localStorage read)
+      let preferred: string | null = null;
+      try {
+        preferred = localStorage.getItem("preferred_wallet");
+      } catch {
+        preferred = null;
+      }
+
+      const tryProviders = preferred
+        ? [preferred, ...providerKeys.filter((k) => k !== preferred)]
+        : window.cardano?.lace
+          ? ["lace", ...providerKeys.filter((k) => k !== "lace")]
+          : providerKeys;
+
+      // 5) Try each provider (silent isEnabled -> enable -> select wallet)
+      for (const key of tryProviders) {
+        try {
+          const prov = window.cardano?.[key];
+          if (!prov) continue;
+
+          // must support isEnabled for silent check
+          if (typeof prov.isEnabled !== "function") {
+            // skip providers that cannot silently report permission
+            continue;
+          }
+
+          const enabled = await prov.isEnabled();
+          if (!enabled) continue;
+
+          // call enable() — should be silent because isEnabled returned true
+          let walletApi: unknown = null;
+          try {
+            const res = await prov.enable();
+            // Some wallets return API from enable(); some mutate prov itself.
+            if (res && looksLikeWalletApi(res)) walletApi = res;
+            else if (looksLikeWalletApi(prov)) walletApi = prov;
+            else walletApi = res || prov;
+          } catch (enableErr) {
+            // enable() threw — try to use provider directly if it already implements methods
+            if (looksLikeWalletApi(prov)) {
+              walletApi = prov;
+            } else {
+              console.warn(
+                "provider.enable() threw and provider is not usable:",
+                key,
+                enableErr
+              );
+              continue; // try next provider
+            }
+          }
+
+          if (!looksLikeWalletApi(walletApi)) {
+            console.warn(
+              "Provider enabled but does not implement required CIP-30 methods:",
+              key
+            );
+            continue;
+          }
+
+          // Initialize lucid (frontend) and select the wallet
+          const lucid = await getLucidFront();
+          await lucid.selectWallet(walletApi);
+
+          // Fetch the address (this also validates wallet is usable)
+          const address = await lucid.wallet.address();
+
+          // Persist preferred wallet and allow future autoReconnect
+          try {
+            localStorage.setItem("preferred_wallet", key);
+            localStorage.setItem("should_auto_reconnect", "true");
+          } catch {
+            // ignore
+          }
+
+          // Update store and finish
+          set({
+            lucid,
+            connectedAddress: address,
+            walletProviderName: key,
+            authUser: true,
+            shouldAutoReconnect: true,
+          });
+
+          console.log("Auto-reconnected to wallet:", key, address);
+          return;
+        } catch (innerErr) {
+          // provider-specific failure — continue to next provider
+          console.warn(
+            "autoReconnect: provider attempt failed for",
+            key,
+            innerErr
+          );
+          continue;
+        }
+      }
+
+      // none reconnected
+      console.log("autoReconnect: no provider auto-reconnected");
+    } catch (err) {
+      console.warn("autoReconnect error", err);
+    }
+  },
 }));

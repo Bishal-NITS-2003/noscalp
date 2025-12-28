@@ -2,7 +2,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
 const events = [
   {
@@ -58,8 +57,6 @@ const filters = [
 ];
 
 export default function UpcomingEvents() {
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-
   return (
     <section className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-[1180px]">
@@ -88,7 +85,6 @@ export default function UpcomingEvents() {
                 key={idx}
                 className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-purple-50"
                 style={{
-                  ["--tw-border-opacity" as any]: "1",
                   borderColor: "rgba(85, 34, 204, 0)",
                 }}
                 onMouseEnter={(e) =>

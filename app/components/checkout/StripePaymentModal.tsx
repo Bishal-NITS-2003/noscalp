@@ -71,9 +71,11 @@ function CheckoutForm({
         onError("Payment incomplete");
         setIsProcessing(false);
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || "An unexpected error occurred");
-      onError(err.message);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      setErrorMessage(errorMessage);
+      onError(errorMessage);
       setIsProcessing(false);
     }
   };
@@ -176,10 +178,12 @@ export default function StripePaymentModal({
         }
 
         setClientSecret(data.clientSecret);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error creating payment intent:", err);
-        setError(err.message || "Failed to initialize payment");
-        onPaymentError(err.message);
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to initialize payment";
+        setError(errorMessage);
+        onPaymentError(errorMessage);
       } finally {
         setLoading(false);
       }

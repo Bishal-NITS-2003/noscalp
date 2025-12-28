@@ -29,8 +29,8 @@ export default function Brands() {
             Join these brands
           </h2>
           <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-            We've had the pleasure of working with industry-defining brands.
-            These are just some of them.
+            We&apos;ve had the pleasure of working with industry-defining
+            brands. These are just some of them.
           </p>
         </motion.div>
 

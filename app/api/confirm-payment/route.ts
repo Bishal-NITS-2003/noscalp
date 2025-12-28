@@ -22,11 +22,10 @@ export async function POST(request: NextRequest) {
         ? "Payment confirmed successfully"
         : "Payment not yet completed",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Payment confirmation error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to confirm payment" },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to confirm payment";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

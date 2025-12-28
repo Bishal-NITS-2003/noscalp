@@ -6,7 +6,19 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
@@ -21,7 +33,7 @@
     "html2canvas": "^1.4.1",
     "lucid-cardano": "^0.10.11",
     "lucide-react": "^0.553.0",
-    "next": "16.0.1",
+    "next": "16.1.1",
     "node-fetch": "^3.3.2",
     "qrcode.react": "^4.2.0",
     "react": "19.2.0",
@@ -37,7 +49,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.0.1",
+    "eslint-config-next": "16.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

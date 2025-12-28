@@ -22,11 +22,12 @@ export async function POST(request: NextRequest) {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Payment intent creation error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create payment intent" },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Failed to create payment intent";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

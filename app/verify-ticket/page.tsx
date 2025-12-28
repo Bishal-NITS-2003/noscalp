@@ -32,7 +32,7 @@ function TicketVerifier({
 
   const [verifying, setVerifying] = useState(true);
   const [isValid, setIsValid] = useState(false);
-  const [ticketData, setTicketData] = useState<any>(null);
+  const [ticketData, setTicketData] = useState<unknown>(null);
 
   useEffect(() => {
     if (unit && txHash) {
@@ -40,6 +40,7 @@ function TicketVerifier({
     } else {
       setVerifying(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unit, txHash]);
 
   const verifyTicket = async () => {
@@ -80,20 +81,20 @@ function TicketVerifier({
   if (!unit || !txHash) {
     return (
       <div className="min-h-screen bg-gray-50">
-         {/* Navbar with background */}
-                      <div className="relative z-10">
-                        <div
-                          className="absolute inset-0 z-0"
-                          style={{
-                            backgroundImage: `url('/Hero/background.png')`,
-                            backgroundRepeat: "no-repeat",
-                            backgroundSize: "cover",
-                            backgroundPosition: "top",
-                          }}
-                        />
-                        <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
-                        <Navbar />
-                      </div>
+        {/* Navbar with background */}
+        <div className="relative z-10">
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url('/Hero/background.png')`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "top",
+            }}
+          />
+          <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+          <Navbar />
+        </div>
         <div className="flex min-h-[60vh] items-center justify-center px-4">
           <div className="text-center">
             <XCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
@@ -112,20 +113,20 @@ function TicketVerifier({
 
   return (
     <div className="min-h-screen bg-gray-50">
-       {/* Navbar with background */}
-                    <div className="relative z-10">
-                      <div
-                        className="absolute inset-0 z-0"
-                        style={{
-                          backgroundImage: `url('/Hero/background.png')`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundSize: "cover",
-                          backgroundPosition: "top",
-                        }}
-                      />
-                      <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
-                      <Navbar />
-                    </div>
+      {/* Navbar with background */}
+      <div className="relative z-10">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('/Hero/background.png')`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "top",
+          }}
+        />
+        <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+        <Navbar />
+      </div>
 
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         {verifying ? (

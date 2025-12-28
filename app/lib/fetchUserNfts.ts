@@ -58,8 +58,8 @@ export async function fetchUserNfts(
           }
 
           const assetInfo: {
-            onchain_metadata?: Record<string, any>;
-            metadata?: Record<string, any>;
+            onchain_metadata?: Record<string, unknown>;
+            metadata?: Record<string, unknown>;
             initial_mint_tx_hash?: string;
           } = await response.json();
 
