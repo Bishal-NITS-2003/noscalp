@@ -4,9 +4,10 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ProgressStepper from "@/app/components/event/ProgressStepper";
 import EventHeader from "../../components/event/EventHeader";
-import DateTimeSelector from "../../components/event/DateTimeSelector";
+import DateTimeSelector, {
+  type TimeSlot,
+} from "../../components/event/DateTimeSelector";
 import { getEventById } from "../../data/events";
-import { motion } from "framer-motion";
 
 export default function EventPage() {
   const params = useParams();
@@ -22,14 +23,14 @@ export default function EventPage() {
             Event Not Found
           </h1>
           <p className="text-gray-600">
-            The event you're looking for doesn't exist.
+            The event you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
       </div>
     );
   }
 
-  const handleBookNow = (slot: any) => {
+  const handleBookNow = (slot: TimeSlot) => {
     // Store the selected time slot and navigate to seat selection
     sessionStorage.setItem("selectedTimeSlot", JSON.stringify(slot));
     router.push(`/event/${eventId}/seats`);

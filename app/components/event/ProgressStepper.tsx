@@ -41,8 +41,8 @@ export default function ProgressStepper({
                     step.number === currentStep
                       ? "bg-[#ED4690] border-[#ED4690]  text-white"
                       : step.number < currentStep
-                      ? "border-[#ED4690] bg-[#ED4690] text-white"
-                      : "border-gray-300 bg-white text-gray-400"
+                        ? "border-[#ED4690] bg-[#ED4690] text-white"
+                        : "border-gray-300 bg-white text-gray-400"
                   }`}
                 >
                   {step.number}

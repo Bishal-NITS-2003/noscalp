@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import html2canvas from "html2canvas";
 import Navbar from "@/app/components/Navbar";
@@ -34,9 +34,7 @@ const REWARDS = [
 ];
 
 export default function SuccessPage() {
-  const params = useParams();
   const router = useRouter();
-  const eventId = params.id as string;
   const ticketCardRef = useRef<HTMLDivElement>(null);
 
   const [purchaseData, setPurchaseData] = useState<{
@@ -53,7 +51,7 @@ export default function SuccessPage() {
     if (storedData) {
       try {
         const data = JSON.parse(storedData);
-        setPurchaseData(data);
+        setTimeout(() => setPurchaseData(data), 0);
       } catch (error) {
         console.error("Error parsing purchase data:", error);
         router.push("/");
@@ -62,7 +60,7 @@ export default function SuccessPage() {
       // No purchase data found, redirect to home
       router.push("/");
     }
-    setIsLoading(false);
+    setTimeout(() => setIsLoading(false), 0);
   }, [router]);
 
   const handleDownloadTicket = async () => {
@@ -151,7 +149,7 @@ export default function SuccessPage() {
             `${shareData.title}\n\n${shareData.text}`
           );
           alert("Ticket details copied to clipboard!");
-        } catch (clipboardError) {
+        } catch {
           alert("Unable to share. Please try again.");
         }
       }
@@ -245,7 +243,7 @@ export default function SuccessPage() {
                 Congratulations!
               </h2>
               <p className="text-sm text-gray-700 sm:text-base">
-                You've Successfully purchased the ticket for:
+                You&apos;ve Successfully purchased the ticket for:
               </p>
               <p className="text-sm font-medium text-gray-900 sm:text-base">
                 {eventTitle}.

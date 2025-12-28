@@ -58,13 +58,21 @@ export async function fetchUserNfts(
           }
 
           const assetInfo: {
-            onchain_metadata?: Record<string, any>;
-            metadata?: Record<string, any>;
+            onchain_metadata?: Record<string, unknown>;
+            metadata?: Record<string, unknown>;
             initial_mint_tx_hash?: string;
           } = await response.json();
 
           const metadata =
             assetInfo.onchain_metadata ?? assetInfo.metadata ?? {};
+
+          const getName = (obj: Record<string, unknown>): string => {
+            return typeof obj.name === "string" ? obj.name : assetName;
+          };
+
+          const getString = (value: unknown): string => {
+            return typeof value === "string" ? value : "";
+          };
 
           nfts.push({
             unit,
@@ -72,15 +80,15 @@ export async function fetchUserNfts(
             assetName,
             quantity: quantity.toString(),
             onchainMetadata: {
-              name: metadata.name ?? assetName,
-              image: metadata.image ?? "",
-              description: metadata.description,
-              event: metadata.event,
-              seat: metadata.seat,
-              price_inr: metadata.price_inr,
-              max_resale_price_inr: metadata.max_resale_price_inr,
-              issuedAt: metadata.issuedAt,
-              metadataUrl: metadata.metadataUrl,
+              name: getName(metadata),
+              image: getString(metadata.image),
+              description: getString(metadata.description),
+              event: getString(metadata.event),
+              seat: getString(metadata.seat),
+              price_inr: getString(metadata.price_inr),
+              max_resale_price_inr: getString(metadata.max_resale_price_inr),
+              issuedAt: getString(metadata.issuedAt),
+              metadataUrl: getString(metadata.metadataUrl),
             },
             mintTxHash: assetInfo.initial_mint_tx_hash,
           });

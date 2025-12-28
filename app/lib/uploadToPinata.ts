@@ -39,7 +39,9 @@ export async function uploadToPinata(file: File): Promise<string> {
 /**
  * Upload JSON metadata to Pinata
  */
-export async function uploadMetadataToPinata(metadata: object): Promise<string> {
+export async function uploadMetadataToPinata(
+  metadata: object
+): Promise<string> {
   const blob = new Blob([JSON.stringify(metadata)], {
     type: "application/json",
   });

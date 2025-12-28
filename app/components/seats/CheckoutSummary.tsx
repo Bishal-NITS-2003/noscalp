@@ -1,6 +1,5 @@
 "use client";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 
 interface CheckoutSummaryProps {
   subtotal: number;
@@ -15,7 +14,6 @@ export default function CheckoutSummary({
   itemCount,
   onCheckout,
 }: CheckoutSummaryProps) {
-  const router = useRouter();
   const total = subtotal + serviceFee;
 
   return (

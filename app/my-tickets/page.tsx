@@ -21,12 +21,6 @@ export default function MyTicketsPage() {
   const [loading, setLoading] = useState(false);
   const [burning, setBurning] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (lucid && connectedAddress) {
-      loadTickets();
-    }
-  }, [lucid, connectedAddress]);
-
   const loadTickets = async () => {
     if (!lucid || !connectedAddress) return;
 
@@ -45,8 +39,19 @@ export default function MyTicketsPage() {
     }
   };
 
+  useEffect(() => {
+    if (lucid && connectedAddress) {
+      loadTickets();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lucid, connectedAddress]);
+
   const handleBurnTicket = async (ticket: NftTicket) => {
-    if (!confirm(`Are you sure you want to cancel ticket: ${ticket.onchainMetadata.name}?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to cancel ticket: ${ticket.onchainMetadata.name}?`
+      )
+    ) {
       return;
     }
 
@@ -66,20 +71,20 @@ export default function MyTicketsPage() {
   if (!connectedAddress) {
     return (
       <div className="min-h-screen bg-gray-50">
-              {/* Navbar with background */}
-              <div className="relative z-10">
-                <div
-                  className="absolute inset-0 z-0"
-                  style={{
-                    backgroundImage: `url('/Hero/background.png')`,
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "cover",
-                    backgroundPosition: "top",
-                  }}
-                />
-                <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
-                <Navbar />
-              </div>
+        {/* Navbar with background */}
+        <div className="relative z-10">
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url('/Hero/background.png')`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "top",
+            }}
+          />
+          <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+          <Navbar />
+        </div>
         <div className="flex min-h-[60vh] items-center justify-center px-4 my-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -108,20 +113,20 @@ export default function MyTicketsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-       {/* Navbar with background */}
-              <div className="relative z-10">
-                <div
-                  className="absolute inset-0 z-0"
-                  style={{
-                    backgroundImage: `url('/Hero/background.png')`,
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "cover",
-                    backgroundPosition: "top",
-                  }}
-                />
-                <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
-                <Navbar />
-              </div>
+      {/* Navbar with background */}
+      <div className="relative z-10">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('/Hero/background.png')`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "top",
+          }}
+        />
+        <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+        <Navbar />
+      </div>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <motion.div
@@ -156,7 +161,7 @@ export default function MyTicketsPage() {
                 No Tickets Yet
               </h3>
               <p className="text-gray-500">
-                You haven't purchased any NFT tickets yet.
+                You haven&apos;t purchased any NFT tickets yet.
               </p>
             </div>
           </motion.div>

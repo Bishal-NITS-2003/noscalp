@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -16,7 +16,7 @@ import {
   ticketTiers,
   getTierForSection,
 } from "@/app/data/seats";
-import { Seat, SelectedTicket, TicketTier } from "@/app/types/seat";
+import { Seat, SelectedTicket } from "@/app/types/seat";
 import Footer from "@/app/components/Footer";
 
 export default function SeatSelectionPage() {
@@ -24,17 +24,12 @@ export default function SeatSelectionPage() {
   const router = useRouter();
   const eventId = params.id as string;
 
-  const [seats, setSeats] = useState<Seat[]>([]);
-  const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
-
   const event = getEventById(eventId);
   const venueLayout = getVenueLayoutByEventId(eventId);
-
-  useEffect(() => {
-    // Generate seats when component mounts
-    const initialSeats = generateVenueSeats(venueLayout);
-    setSeats(initialSeats);
-  }, [eventId]);
+  const [seats, setSeats] = useState<Seat[]>(() =>
+    generateVenueSeats(venueLayout)
+  );
+  const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
 
   const handleSeatClick = (seat: Seat) => {
     if (seat.status === "selected") {
@@ -236,11 +231,9 @@ export default function SeatSelectionPage() {
               onCheckout={handleCheckout}
             />
           </motion.div>
-
         </div>
-
       </div>
-                        <Footer />
+      <Footer />
     </div>
   );
 }

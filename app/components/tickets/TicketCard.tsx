@@ -12,7 +12,12 @@ interface TicketCardProps {
   isBurning?: boolean;
 }
 
-export default function TicketCard({ ticket, index, onBurn, isBurning }: TicketCardProps) {
+export default function TicketCard({
+  ticket,
+  index,
+  onBurn,
+  isBurning,
+}: TicketCardProps) {
   const verificationUrl =
     typeof window !== "undefined" && ticket.mintTxHash
       ? `${window.location.origin}/verify-ticket?unit=${ticket.unit}&txHash=${ticket.mintTxHash}`
@@ -31,7 +36,10 @@ export default function TicketCard({ ticket, index, onBurn, isBurning }: TicketC
     >
       <div className="relative h-48 w-full bg-linear-to-br from-purple-500 to-pink-500">
         <Image
-          src={ticket.onchainMetadata.image.replace("ipfs://", "https://ipfs.io/ipfs/")}
+          src={ticket.onchainMetadata.image.replace(
+            "ipfs://",
+            "https://ipfs.io/ipfs/"
+          )}
           alt={ticket.onchainMetadata.name}
           fill
           className="object-cover opacity-90"
