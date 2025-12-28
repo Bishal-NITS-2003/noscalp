@@ -54,7 +54,8 @@ export default function CheckoutPage() {
   const serviceFeePerTicket = 1.0;
   const totalServiceFees = selectedTickets.length * serviceFeePerTicket;
 
-  const handlePayment = async () => {
+  // This function is called AFTER successful Stripe payment
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
     if (!connectedAddress) {
       toast.error("Please connect your Cardano wallet first.");
       await connectWallet?.();
@@ -67,10 +68,26 @@ export default function CheckoutPage() {
 
     setPaying(true);
     try {
+      // First, verify the payment was successful on server side
+      const verifyResponse = await fetch("/api/confirm-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentIntentId }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyData.success) {
+        throw new Error("Payment verification failed. Please contact support.");
+      }
+
+      toast.success("Payment verified! Now minting your NFT tickets...");
+
+      // Payment verified, now mint the NFT tickets on Cardano
       const first = selectedTickets[0];
       const eventName = first.eventTitle;
       const eventDescription =
-        "Ticket for event purchased through the Cardano checkout.";
+        "Ticket for event purchased through Stripe and minted on Cardano.";
 
       const usdToInrRate = 85;
 
@@ -86,16 +103,16 @@ export default function CheckoutPage() {
           imageUrl,
         };
 
-        console.log("About to call mintTicket with payload:", payload);
-
+        console.log("Minting ticket NFT with payload:", payload);
         await mintTicket(payload);
       }
 
-      // Optionally: store purchase data for success page
+      // Store purchase data for success page
       const purchaseData = {
         tickets: selectedTickets,
         totalAmount: subtotal + totalServiceFees,
         purchaseDate: new Date().toISOString(),
+        paymentIntentId, // Store Stripe payment reference
       };
       sessionStorage.setItem("purchaseData", JSON.stringify(purchaseData));
       sessionStorage.removeItem("selectedTickets");
@@ -104,7 +121,11 @@ export default function CheckoutPage() {
       router.push(`/event/${eventId}/success`);
     } catch (error) {
       console.error("Mint/payment error:", error);
-      toast.error("Failed to mint tickets. Please try again.");
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred";
+      toast.error(
+        `Failed to mint tickets. ${errorMessage}. Payment ID: ${paymentIntentId}`
+      );
     } finally {
       setPaying(false);
     }
@@ -167,7 +188,7 @@ export default function CheckoutPage() {
         </motion.div>
 
         <p className="mb-8 text-center text-sm text-gray-600 sm:text-left">
-          Fill Out Necessary Information here.
+          Secure payment with Stripe, then mint your NFT tickets on Cardano.
         </p>
 
         {/* Two Column Layout */}
@@ -183,7 +204,7 @@ export default function CheckoutPage() {
               subtotal={subtotal}
               serviceFee={totalServiceFees}
               itemCount={selectedTickets.length}
-              onPayment={handlePayment}
+              onPaymentSuccess={handlePaymentSuccess}
               paying={paying}
             />
           </div>

@@ -1,30 +1,26 @@
 "use client";
 import { useState } from "react";
-import PaymentMethodSelector from "./PaymentMethodSelector";
-import PaymentForm from "./PaymentForm";
 import CheckoutPricingSummary from "./CheckoutPricingSummary";
+import StripePaymentModal from "./StripePaymentModal";
 import { useAuthStore } from "@/app/store/useAuthStore";
-
-type PaymentMethod = "paypal" | "credit-card" | "paypal-checkout";
 
 interface PaymentDetailsProps {
   subtotal: number;
   serviceFee: number;
   itemCount: number;
-  onPayment: () => Promise<void> | void; // will call Cardano mint
-  paying: boolean;                        // NEW
+  onPaymentSuccess: (paymentIntentId: string) => Promise<void> | void; // Called after successful payment
+  paying: boolean;
 }
 
 export default function PaymentDetails({
   subtotal,
   serviceFee,
   itemCount,
-  onPayment,
+  onPaymentSuccess,
   paying,
 }: PaymentDetailsProps) {
-  const [selectedMethod, setSelectedMethod] =
-    useState<PaymentMethod>("credit-card");
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const { connectedAddress } = useAuthStore();
   const walletConnected = !!connectedAddress;
@@ -39,7 +35,20 @@ export default function PaymentDetails({
       alert("Please connect your Cardano wallet to continue.");
       return;
     }
-    await onPayment();
+    // Open Stripe payment modal
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    console.log("Payment successful! Intent ID:", paymentIntentId);
+    setShowPaymentModal(false);
+    // Now proceed to mint NFT tickets
+    await onPaymentSuccess(paymentIntentId);
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error);
+    alert(`Payment failed: ${error}`);
   };
 
   return (
@@ -47,24 +56,6 @@ export default function PaymentDetails({
       <h2 className="mb-6 text-lg font-bold text-gray-900 sm:text-xl">
         Payment Details
       </h2>
-
-      {/* Payment method selector (UI only) */}
-      <div className="mb-6">
-        <h3 className="mb-3 text-sm font-medium text-gray-700">
-          Select Payment Method
-        </h3>
-        <PaymentMethodSelector
-          selectedMethod={selectedMethod}
-          onMethodChange={setSelectedMethod}
-        />
-      </div>
-
-      {/* Mock card form (visual only) */}
-      {selectedMethod === "credit-card" && (
-        <div className="mb-6">
-          <PaymentForm />
-        </div>
-      )}
 
       {/* Pricing summary */}
       <div className="mb-6">
@@ -103,16 +94,28 @@ export default function PaymentDetails({
       >
         {walletConnected
           ? paying
-            ? "Minting your Cardano ticket NFTs..."
-            : `Pay ₹${total.toFixed(2)} & Mint NFT Ticket(s)`
-          : "Connect Cardano Wallet to Pay & Mint"}
+            ? "Processing payment & minting NFTs..."
+            : `Pay $${total.toFixed(2)} with Stripe`
+          : "Connect Cardano Wallet First"}
       </button>
 
       {!walletConnected && (
         <p className="mt-3 text-center text-xs text-red-500">
-          Wallet not connected. Please connect your Cardano wallet before paying.
+          Wallet not connected. Please connect your Cardano wallet before
+          paying.
         </p>
       )}
+
+      {/* Stripe Payment Modal */}
+      <StripePaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        totalAmount={total}
+        currency="usd"
+        onPaymentSuccess={handlePaymentSuccess}
+        onPaymentError={handlePaymentError}
+        ticketCount={itemCount}
+      />
     </div>
   );
 }
