@@ -3,11 +3,10 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/app/store/useAuthStore";
-import { Data, fromText, Script } from "lucid-cardano";
+import { fromText } from "lucid-cardano";
 import { generateNativeMintingPolicy } from "@/app/lib/generateNativePolicy";
 import { uploadMetadataToPinata } from "@/app/lib/uploadToPinata";
 import type { NftTicket } from "@/app/lib/fetchUserNfts";
-
 
 const TICKET_SCRIPT_ADDRESS =
   process.env.NEXT_PUBLIC_TICKET_SCRIPT_ADDRESS || "";
@@ -24,9 +23,11 @@ type TicketContractState = {
   minting: boolean;
   cancelling: boolean;
   withdrawing: boolean;
-  mintTicket: (
-    payload: MintTicketPayload
-  ) => Promise<{ txHash?: string; assetId?: string; metadataUrl?: string } | void>;
+  mintTicket: (payload: MintTicketPayload) => Promise<{
+    txHash?: string;
+    assetId?: string;
+    metadataUrl?: string;
+  } | void>;
   cancelTicket: (tokenUnit: string) => Promise<string | void>;
   withdrawFunds: () => Promise<string | void>;
   burnTicket: (ticket: NftTicket) => Promise<string>;
@@ -77,8 +78,7 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
           { trait_type: "Issued At", value: new Date().toISOString() },
         ],
         transferable: false, // ⬅️ Add this line
-        note: "Transfers invalidate this ticket"
-
+        note: "Transfers invalidate this ticket",
       };
 
       // 2) Upload metadata JSON to Pinata (optional but you already have it)
@@ -87,19 +87,24 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       console.log("Metadata uploaded:", metadataUrl);
 
       // 3) Generate native minting policy
-      const { nativeScript, policyId, keyHash: policyKeyHash } = //keyHash here
-        await generateNativeMintingPolicy(lucid);
+      const {
+        nativeScript,
+        policyId,
+        keyHash: policyKeyHash,
+      } = await generateNativeMintingPolicy(lucid); // <-- Get keyHash here
 
       // --- START CORRECTED DEBUG LOGS ---
-      const signerKeyHash = lucid.utils.getAddressDetails(connectedAddress)
-        .paymentCredential?.hash;
+      const signerKeyHash =
+        lucid.utils.getAddressDetails(connectedAddress).paymentCredential?.hash;
 
-        console.log("DEBUG: Connected address:", connectedAddress);
+      console.log("DEBUG: Connected address:", connectedAddress);
       console.log("DEBUG: Policy requires keyHash:", policyKeyHash);
       console.log("DEBUG: Signer provides keyHash:", signerKeyHash);
 
       if (policyKeyHash !== signerKeyHash) {
-        toast.error("CRITICAL: KeyHash mismatch! Policy and signer do not match.");
+        toast.error(
+          "CRITICAL: KeyHash mismatch! Policy and signer do not match."
+        );
         console.error(
           "CRITICAL: KeyHash mismatch! Policy requires",
           policyKeyHash,
@@ -110,14 +115,14 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
         return;
       }
       // --- END CORRECTED DEBUG LOGS ---
-      
-/*
+
+      /*
       // 4) Unique asset name per seat
       const timestamp = Date.now();
       const assetName = `Ticket-${seatId}-${timestamp}`;
       const assetNameHex = Buffer.from(assetName, "utf8").toString("hex");
       const unit = `${policyId}${assetNameHex}`;
-*/    
+*/
       // 4) Build a short asset name (≤ 32 bytes) using seatId + tiny nonce
       const encoder = new TextEncoder();
       const nonce = Date.now().toString(36).slice(-4); // short suffix
@@ -138,7 +143,7 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       // Convert to hex
       const assetNameHex = fromText(tokenName);
       const unit = `${policyId}${assetNameHex}`;
-      
+
       // 5) On-chain metadata
       const onchainMetadata = {
         [policyId]: {
@@ -160,13 +165,13 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       const tx = await lucid
         .newTx()
         .addSigner(connectedAddress)
-        .mintAssets({ [unit]: 1n })             
+        .mintAssets({ [unit]: 1n })
         .attachMintingPolicy(nativeScript)
         .payToAddress(connectedAddress, { [unit]: 1n })
         .attachMetadata(721, onchainMetadata)
         .complete();
 
-        console.log("DEBUG: Transaction details:", tx);
+      console.log("DEBUG: Transaction details:", tx);
 
       const signed = await tx.sign().complete();
       toast("Minting ticket NFT...", { icon: "⏳" });
@@ -184,14 +189,15 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
           assetUnit: unit,
           mintTxHash: txHash,
           originalOwnerWallet: connectedAddress,
-          status: "VALID"
-        })
+          status: "VALID",
+        }),
       });
 
       return { txHash, assetId: unit, metadataUrl };
-    } catch (err: any) {
+    } catch (err) {
       console.error("mintTicket error", err);
-      toast.error("Mint failed: " + (err?.message ?? String(err)));
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error("Mint failed: " + errorMessage);
       throw err;
     } finally {
       set({ minting: false });
@@ -221,9 +227,10 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       const txHash = await signed.submit();
       toast.success("Ticket cancelled: " + txHash);
       return txHash;
-    } catch (err: any) {
+    } catch (err) {
       console.error("cancelTicket error", err);
-      toast.error("Cancel failed: " + (err?.message ?? String(err)));
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error("Cancel failed: " + errorMessage);
       throw err;
     } finally {
       set({ cancelling: false });
@@ -266,9 +273,11 @@ export const useTicketContractStore = create<TicketContractState>((set) => ({
       await lucid.awaitTx(txHash);
 
       return txHash;
-    } catch (error: any) {
+    } catch (error) {
       console.error("burnTicket error", error);
-      toast.error(error.message || "Failed to burn ticket");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to burn ticket";
+      toast.error(errorMessage);
       throw error;
     }
   },

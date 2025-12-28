@@ -8,17 +8,15 @@ export async function getLucidServer() {
   const apiKey = process.env.BLOCKFROST_API_KEY!;
   if (!apiKey) throw new Error("BLOCKFROST_API_KEY missing");
 
-  const network = (process.env.BLOCKFROST_NETWORK || "Preprod") as "Mainnet" | "Preprod" | "Preview";
+  const network = (process.env.BLOCKFROST_NETWORK || "Preprod") as
+    | "Mainnet"
+    | "Preprod"
+    | "Preview";
 
   lucid = await Lucid.new(
-    new Blockfrost(
-      "https://cardano-preprod.blockfrost.io/api/v0",
-      apiKey
-    ),
+    new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", apiKey),
     network
   );
 
   return lucid;
 }
-
-

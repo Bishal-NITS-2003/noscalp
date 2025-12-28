@@ -11,6 +11,17 @@ export const dynamic = "force-dynamic";
 
 const BLOCKFROST_API = "https://cardano-preprod.blockfrost.io/api/v0";
 
+interface TicketMetadata {
+  event?: string;
+  name?: string;
+  seat?: string;
+  price_inr?: string;
+  issuedAt?: string;
+  mintTxHash?: string;
+  policyId?: string;
+  [key: string]: unknown;
+}
+
 function TicketVerifier({
   ticketId,
   unit: unitParam,
@@ -32,7 +43,7 @@ function TicketVerifier({
 
   const [verifying, setVerifying] = useState(true);
   const [isValid, setIsValid] = useState(false);
-  const [ticketData, setTicketData] = useState<any>(null);
+  const [ticketData, setTicketData] = useState<TicketMetadata | null>(null);
 
   useEffect(() => {
     if (unit && txHash) {
@@ -40,6 +51,7 @@ function TicketVerifier({
     } else {
       setVerifying(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unit, txHash]);
 
   const verifyTicket = async () => {
@@ -50,7 +62,7 @@ function TicketVerifier({
       const res = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetUnit: unit })
+        body: JSON.stringify({ assetUnit: unit }),
       });
       const result = await res.json();
       setIsValid(result.valid);
@@ -79,7 +91,7 @@ function TicketVerifier({
           ...assetInfo.onchain_metadata,
           mintTxHash: txHash,
           policyId: unit!.slice(0, 56),
-        });
+        } as TicketMetadata);
       } else {
         setTicketData(null);
       }
@@ -95,20 +107,20 @@ function TicketVerifier({
   if (!unit || !txHash) {
     return (
       <div className="min-h-screen bg-gray-50">
-         {/* Navbar with background */}
-                      <div className="relative z-10">
-                        <div
-                          className="absolute inset-0 z-0"
-                          style={{
-                            backgroundImage: `url('/Hero/background.png')`,
-                            backgroundRepeat: "no-repeat",
-                            backgroundSize: "cover",
-                            backgroundPosition: "top",
-                          }}
-                        />
-                        <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
-                        <Navbar />
-                      </div>
+        {/* Navbar with background */}
+        <div className="relative z-10">
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url('/Hero/background.png')`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "top",
+            }}
+          />
+          <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+          <Navbar />
+        </div>
         <div className="flex min-h-[60vh] items-center justify-center px-4">
           <div className="text-center">
             <XCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
@@ -127,20 +139,20 @@ function TicketVerifier({
 
   return (
     <div className="min-h-screen bg-gray-50">
-       {/* Navbar with background */}
-                    <div className="relative z-10">
-                      <div
-                        className="absolute inset-0 z-0"
-                        style={{
-                          backgroundImage: `url('/Hero/background.png')`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundSize: "cover",
-                          backgroundPosition: "top",
-                        }}
-                      />
-                      <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
-                      <Navbar />
-                    </div>
+      {/* Navbar with background */}
+      <div className="relative z-10">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('/Hero/background.png')`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "top",
+          }}
+        />
+        <div className="absolute inset-0 z-10 bg-linear-to-br from-[#ED4690] to-[#5522CC] opacity-90" />
+        <Navbar />
+      </div>
 
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         {verifying ? (
@@ -177,25 +189,25 @@ function TicketVerifier({
                     <div>
                       <p className="text-sm text-gray-500">Event</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.event || ticketData.name}
+                        {ticketData?.event || ticketData?.name || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Seat</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.seat || "N/A"}
+                        {ticketData?.seat || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Price</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.price_inr || "N/A"}
+                        {ticketData?.price_inr || "N/A"}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Issued</p>
                       <p className="font-medium text-gray-900">
-                        {ticketData.issuedAt
+                        {ticketData?.issuedAt
                           ? new Date(ticketData.issuedAt).toLocaleDateString()
                           : "N/A"}
                       </p>
@@ -205,7 +217,7 @@ function TicketVerifier({
                   <div className="border-t pt-4">
                     <p className="mb-2 text-sm text-gray-500">Policy ID</p>
                     <p className="break-all font-mono text-xs text-gray-700">
-                      {ticketData.policyId}
+                      {ticketData?.policyId || "N/A"}
                     </p>
                   </div>
 

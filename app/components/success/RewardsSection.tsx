@@ -22,7 +22,7 @@ export default function RewardsSection({ rewards }: RewardsSectionProps) {
         Thank you for choosing to buy from Ticketer!
       </p>
       <p className="text-sm font-medium text-gray-900 sm:text-base">
-        You've unlocked special rewards:
+        You&apos;ve unlocked special rewards:
       </p>
       <div className="space-y-2">
         {rewards.map((reward, index) => (
